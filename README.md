@@ -21,6 +21,21 @@ The native Fusion dialog is **modal**, meaning it **must be dismissed** to conti
 
 ## Installation
 
+### Method: Installer Packages
+Windows and Mac installers are availble under the "Releases" link.
+
+#### Windows Users
+1.  **Download:** Download the latest installer (`LiveParameters_Win.exe` or `.msi`).
+2.  **Install:** Double-click the installer to run it.
+    * *Note: If Windows protects your PC saying "Unknown Publisher," click **More Info** → **Run Anyway**. (I'm an indie developer, not a giant corporation!)*
+3.  **Restart:** If Fusion is open, restart it to load the new add-in.
+
+#### Mac Users
+1.  **Download:** Download the latest package (`LiveParameters_Mac.pkg`).
+2.  **Install:** Double-click the package to run the installer.
+    * *Note: If macOS prevents the install, Right-Click the file and choose **Open**, then click **Open** again in the dialog box.*
+3.  **Restart:** If Fusion is open, restart it to load the new add-in.
+
 ### Method: Manual Installation (Scripts & Add-Ins)
 Since this is a Python-based add-in, you can install it directly into your Fusion API folder.
 
