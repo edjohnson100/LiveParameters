@@ -12,7 +12,7 @@
 ; Options are "Scripts" or "AddIns"
 #define APP_TYPE "AddIns" 
 ; 4. AppVersion: Edit to match the current build
-AppVersion=1.0.0
+AppVersion=1.1.0
 ; ==============================================================================
 ; 📝 END CONFIGURATION
 ; ==============================================================================

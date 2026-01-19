@@ -8,7 +8,7 @@ APP_NAME="LiveParameters"
 # AddIns or Scripts
 APP_TYPE="AddIns"
 IDENTIFIER="com.makingwithanedj.liveparameters"         
-VERSION="1.0.0"
+VERSION="1.1.0"
 # ==============================================================================
 # 📝 END CONFIGURATION
 # ==============================================================================

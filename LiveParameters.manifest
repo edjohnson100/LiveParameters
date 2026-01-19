@@ -4,7 +4,7 @@
 	"id": "6B29FC40-CA47-4727-A9E0-84E395A21D5F",
 	"author": "Ed Johnson",
 	"description": "A persistent palette for managing User Parameters in real-time.",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"runOnStartup": false,
 	"supportedOS": "windows|mac",
 	"editEnabled": true,
