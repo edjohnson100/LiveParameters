@@ -133,6 +133,7 @@
             text-align: center; 
             display: none; 
             font-weight: bold;
+            white-space: pre-wrap; /* Preserves \n and wraps long lines */
         }
         .status-box.success { background: var(--status-success-bg); color: var(--status-success-text); border: 1px solid var(--status-success-border); display: block; }
         .status-box.error { background: var(--status-error-bg); color: var(--status-error-text); border: 1px solid var(--status-error-border); display: block; }
@@ -407,7 +408,6 @@
                 return;
             }
 
-            // Close modal immediately and show saving status
             closeEditModal();
             showStatus({message: "Saving...", type: "info"});
             
@@ -419,26 +419,36 @@
         }
 
         let statusTimeout;
+        
         function showStatus(data) {
             const box = document.getElementById('statusMessage');
             if (!box) return;
 
+            // 1. Force display immediately
             box.innerText = data.message;
             box.className = 'status-box ' + (data.type || '');
             box.style.display = 'block';
 
+            // 2. Clear any existing timer to prevent premature hiding
             if (statusTimeout) clearTimeout(statusTimeout);
 
+            // 3. If Success: Clear Inputs
             if (data.type === 'success') {
-                // Clear creation inputs
                 const newName = document.getElementById('new_name');
                 if (newName) newName.value = '';
                 const newExpr = document.getElementById('new_expr');
                 if (newExpr) newExpr.value = '';
                 const newComm = document.getElementById('new_comm');
                 if (newComm) newComm.value = '';
+                
+                // Reset Unit Dropdown
+                const newUnit = document.getElementById('new_unit');
+                if (newUnit) newUnit.value = 'mm';
+                const custUnit = document.getElementById('custom_unit');
+                if (custUnit) custUnit.style.display = 'none';
             }
 
+            // 4. Set NEW timer (3 seconds)
             statusTimeout = setTimeout(() => { 
                 box.style.display = 'none'; 
             }, 3000);

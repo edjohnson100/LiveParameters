@@ -1,3 +1,4 @@
+# LiveParameters.py
 import adsk.core, adsk.fusion, traceback
 import json
 import os
@@ -32,9 +33,7 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 
             url = 'file:///' + html_path.replace('\\', '/')
             
-            # 3. CREATE PALETTE
-            # Arguments: id, name, htmlFileURL, isVisible, showCloseButton, isResizable, WIDTH, HEIGHT
-            # Changed Width from 300 to 360
+            # 3. CREATE PALETTE (Width 360)
             palette = ui.palettes.add(palette_id, 'Live Parameters', url, True, True, True, 360, 400)
             palette.dockingState = adsk.core.PaletteDockingStates.PaletteDockStateRight
             
@@ -55,6 +54,29 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
 class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
     def __init__(self):
         super().__init__()
+    
+    # --- UPDATED SAFETY CHECK ---
+    def is_unsafe(self, palette):
+        # 'SelectCommand' is the default idle state.
+        cmd = ui.activeCommand
+        if cmd != 'SelectCommand':
+            # 1. Check for Auto-Save/Commit (Transient)
+            if cmd == 'CommitCommand': 
+                msg = "Fusion is busy.\n\nPlease try again."
+            
+            # 2. Check for "Sticky" Tools (Rectangle, Line, Extrude, etc)
+            else:
+                msg = f"-- ERROR --\n\nCommand '{cmd}' is active.\n\nClick the Canvas > Press ESC."
+            
+            # Send Error to UI
+            if palette:
+                palette.sendInfoToHTML('notification', json.dumps({
+                    'message': msg,
+                    'type': 'error'
+                }))
+            return True # It IS unsafe
+        return False # It IS safe
+
     def notify(self, args):
         try:
             html_args = adsk.core.HTMLEventArgs.cast(args)
@@ -62,19 +84,35 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
             action = data.get('action')
             palette = ui.palettes.itemById(palette_id)
             
+            # 1. ALWAYS ALLOW REFRESH (Safe to read data anytime)
             if action == 'refresh_data':
                 payload = live_logic.scan_parameters()
                 if palette: palette.sendInfoToHTML('update_ui', payload)
+                return
 
-            elif action == 'update_param':
+            # 2. BLOCK WRITES IF UNSAFE
+            # This prevents "Ghost Parameters" that vanish after Extrude/Preview operations.
+            if self.is_unsafe(palette):
+                return
+
+            # 3. PROCEED WITH WRITE OPERATIONS
+            if action == 'update_param':
                 payload = live_logic.update_parameter(data.get('name'), data.get('value'))
                 result = json.loads(payload)
                 if palette and result.get('type') == 'error':
                     palette.sendInfoToHTML('notification', payload)
 
-            elif action == 'update_comment':
-                payload = live_logic.update_parameter_comment(data.get('name'), data.get('comment'))
-                if palette: palette.sendInfoToHTML('notification', payload)
+            elif action == 'update_attributes':
+                payload = live_logic.update_parameter_attributes(
+                    data.get('old_name'), 
+                    data.get('new_name'), 
+                    data.get('comment')
+                )
+                if palette: 
+                    palette.sendInfoToHTML('notification', payload)
+                    result = json.loads(payload)
+                    if result.get('type') == 'success':
+                         palette.sendInfoToHTML('update_ui', payload)
             
             elif action == 'toggle_favorite':
                 payload = live_logic.toggle_favorite(data.get('name'))
@@ -99,20 +137,16 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
         except:
             if ui: ui.messageBox('HTML Event Failed:\n{}'.format(traceback.format_exc()))
 
-# --- AUTO-REFRESH ON DOCUMENT SWITCH ---
 class MyDocActivatedHandler(adsk.core.DocumentEventHandler):
-    def __init__(self):
-        super().__init__()
+    def __init__(self): super().__init__()
     def notify(self, args):
         try:
             palette = ui.palettes.itemById(palette_id)
             if palette and palette.isVisible:
                 payload = live_logic.scan_parameters()
                 palette.sendInfoToHTML('update_ui', payload)
-        except:
-            pass 
+        except: pass 
 
-# --- BOILERPLATE ---
 class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
     def __init__(self): super().__init__()
     def notify(self, args):

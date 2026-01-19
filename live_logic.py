@@ -66,33 +66,49 @@ def update_parameter(name, expression):
     except Exception as e:
         return json.dumps({"message": f"Error: {str(e)}", "type": "error"})
 
-# --- UPDATED: HANDLES RENAME & COMMENT ---
+def toggle_favorite(name):
+    try:
+        app = adsk.core.Application.get()
+        design = app.activeProduct
+        param = design.userParameters.itemByName(name)
+        if param:
+            param.isFavorite = not param.isFavorite
+    except:
+        pass
+    return scan_parameters()
+
 def update_parameter_attributes(old_name, new_name, comment):
     try:
         app = adsk.core.Application.get()
         design = app.activeProduct
-        param = design.userParameters.itemByName(old_name)
         
+        # 1. Retrieve by OLD name
+        param = design.userParameters.itemByName(old_name)
         if not param:
             return json.dumps({"message": "Parameter not found", "type": "error"})
             
-        # 1. Handle Rename if needed
+        # 2. Handle Rename (if changed)
         if old_name != new_name:
-            # Check for conflict
-            if design.userParameters.itemByName(new_name):
-                 return json.dumps({"message": f"Name '{new_name}' already taken", "type": "error"})
+            # Check for conflict in ALL parameters (User + Model)
+            existing = design.allParameters.itemByName(new_name)
+            if existing and existing.name != old_name:
+                 return json.dumps({"message": f"Name '{new_name}' already in use", "type": "error"})
+            
             try:
                 param.name = new_name
-            except:
+            except Exception as e:
                 return json.dumps({"message": "Invalid Name (Avoid spaces/symbols)", "type": "error"})
         
-        # 2. Update Comment
-        param.comment = str(comment)
+        # 3. Update Comment
+        # Re-fetch by NEW name to ensure we have the valid object reference
+        param = design.userParameters.itemByName(new_name)
+        if param:
+            param.comment = str(comment)
 
-        # 3. Return Success + Full Scan (since name changed, list order might change)
+        # 4. Return Success + Full Scan
         scan_result = json.loads(scan_parameters())
         return json.dumps({
-            "message": "Parameter Saved", 
+            "message": "Saved", 
             "type": "success",
             "doc_name": scan_result.get('doc_name'),
             "parameters": scan_result.get('parameters')
@@ -107,7 +123,7 @@ def create_parameter(name, unit, expression, comment):
         design = app.activeProduct
         if not design: return json.dumps({"message": "No design active", "type": "error"})
 
-        if design.userParameters.itemByName(name):
+        if design.allParameters.itemByName(name):
             return json.dumps({"message": f"Parameter '{name}' already exists", "type": "error"})
 
         if not validate_expression(expression, unit):

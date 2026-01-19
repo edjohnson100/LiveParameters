@@ -17,7 +17,7 @@ The native Fusion dialog is **modal**, meaning it **must be dismissed** to conti
 
 * **Real-Time Updates:** Tweak dimensions and see your model update instantly without closing windows.
 * **Workflow Efficiency:** Keep your parameters docked on the side while you design.
-* **Enhanced Management:** Search, filter by favorites, and manage comments easier than ever before.
+* **Enhanced Management:** Search, filter by favorites, rename parameters, and manage comments easier than ever before.
 
 ## Installation
 
@@ -70,9 +70,11 @@ Once running, the **LiveParameters** palette will appear (defaulting to the righ
     * Supports Name, Unit (dropdown + custom), Expression, and Comments.
     * *Note: Text parameters must be enclosed in single quotes (e.g., `'MyText'`).*
 * **Edit Values:** Type a new value or expression into any input box and press **Enter** (or Tab away) to apply it immediately.
-* **Edit Comments:** Click the **Pencil (✎)** icon next to a parameter to update its comment.
+* **Rename & Edit Comments:** Click the **Pencil (✎)** icon next to a parameter to open the edit dialog. You can safely rename parameters or update comments here.
 * **Delete:** Click the **X** icon to remove a parameter.
     * *Safety Check:* The add-in will prevent deletion if the parameter is currently in use by the model.
+* **Safety Interlock:** To prevent data loss, **LiveParameters** blocks editing while native Fusion commands (like Extrude, Fillet, or Sketch tools) are active.
+    * *Tip:* If you get an error saying a command is active, **Click the Fusion Canvas** and press **ESC** to drop the active tool.
 
 ## Tech Stack
 
