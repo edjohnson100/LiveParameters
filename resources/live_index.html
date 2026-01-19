@@ -76,15 +76,14 @@
             margin-bottom: 15px;
             padding-bottom: 10px;
             border-bottom: 1px solid var(--row-border);
-            gap: 10px; /* Space between flex items */
+            gap: 10px;
         }
         
-        /* Search Box Styles */
         .search-container { flex-grow: 1; }
         .search-input {
             width: 100%;
             padding: 4px 8px;
-            border-radius: 12px; /* Pill shape */
+            border-radius: 12px;
             border: 1px solid var(--input-border);
             background: var(--input-bg);
             color: var(--input-text);
@@ -175,6 +174,37 @@
         .icon-btn { background-color: #0078d4; color: white; padding: 4px 10px; font-size: 12px; border:none; border-radius:4px; cursor:pointer;}
         .empty-state { padding: 10px; color: var(--text-sub); text-align: center; font-style: italic; }
 
+        /* --- EDIT MODAL STYLES --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background: var(--row-bg);
+            padding: 20px;
+            border-radius: 8px;
+            width: 85%;
+            max-width: 300px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .modal-content h3 { margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; border-bottom: 1px solid var(--border-color); padding-bottom: 5px; }
+        .modal-label { font-size: 11px; color: var(--text-sub); font-weight: bold; margin-bottom: -5px; }
+        .modal-actions { display: flex; gap: 10px; margin-top: 10px; }
+        .modal-btn { flex: 1; padding: 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: var(--input-border); color: var(--text-main); }
+        .btn-save { background: #0078d4; color: white; }
+
     </style>
 </head>
 <body>
@@ -188,6 +218,25 @@
             <input type="checkbox" id="theme-checkbox" checked>
             <span class="theme-slider"></span>
         </label>
+    </div>
+
+    <div id="editModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Edit Parameter</h3>
+            
+            <div class="modal-label">Name</div>
+            <input type="text" id="editModalName">
+            
+            <div class="modal-label">Comment</div>
+            <input type="text" id="editModalComment">
+            
+            <input type="hidden" id="editModalOldName">
+
+            <div class="modal-actions">
+                <button class="modal-btn btn-cancel" onclick="closeEditModal()">Cancel</button>
+                <button class="modal-btn btn-save" onclick="saveEditModal()">Save</button>
+            </div>
+        </div>
     </div>
 
     <div class="controls-bar">
@@ -256,7 +305,7 @@
                 if (lastReceivedData) renderUI(lastReceivedData);
             });
 
-            // NEW: Search Filter Logic
+            // Search
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', function(e) {
                 searchQuery = e.target.value.toLowerCase();
@@ -332,12 +381,41 @@
             }
         }
 
-        function editComment(name, currentComment) {
+        // --- EDIT MODAL LOGIC ---
+        function openEditModal(name, currentComment) {
             if (currentComment === 'null' || currentComment === null) currentComment = "";
-            let newComment = prompt("Edit Comment for '" + name + "':", currentComment);
-            if (newComment !== null) {
-                sendToFusion('update_comment', { name: name, comment: newComment });
+            
+            document.getElementById('editModalName').value = name;
+            document.getElementById('editModalComment').value = currentComment;
+            document.getElementById('editModalOldName').value = name;
+            
+            document.getElementById('editModal').style.display = 'flex';
+            document.getElementById('editModalName').focus();
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function saveEditModal() {
+            const oldName = document.getElementById('editModalOldName').value;
+            const newName = document.getElementById('editModalName').value.trim();
+            const newComment = document.getElementById('editModalComment').value.trim();
+
+            if (!newName) {
+                alert("Parameter name cannot be empty.");
+                return;
             }
+
+            // Close modal immediately and show saving status
+            closeEditModal();
+            showStatus({message: "Saving...", type: "info"});
+            
+            sendToFusion('update_attributes', { 
+                old_name: oldName, 
+                new_name: newName, 
+                comment: newComment 
+            });
         }
 
         let statusTimeout;
@@ -352,11 +430,13 @@
             if (statusTimeout) clearTimeout(statusTimeout);
 
             if (data.type === 'success') {
-                document.getElementById('new_name').value = '';
-                document.getElementById('new_expr').value = '';
-                document.getElementById('new_comm').value = '';
-                document.getElementById('new_unit').value = 'mm';
-                document.getElementById('custom_unit').style.display = 'none';
+                // Clear creation inputs
+                const newName = document.getElementById('new_name');
+                if (newName) newName.value = '';
+                const newExpr = document.getElementById('new_expr');
+                if (newExpr) newExpr.value = '';
+                const newComm = document.getElementById('new_comm');
+                if (newComm) newComm.value = '';
             }
 
             statusTimeout = setTimeout(() => { 
@@ -367,7 +447,7 @@
         // --- FUSION BRIDGE ---
 
         let lastReceivedData = null;
-        let searchQuery = ""; // NEW: State for search text
+        let searchQuery = "";
         let connectionAttempts = 0;
         const MAX_ATTEMPTS = 20;
 
@@ -426,10 +506,8 @@
                 pContainer.innerHTML = '';
                 let paramsToShow = data.parameters || [];
                 
-                // 1. FILTER BY FAVORITES
                 if (favOnly) paramsToShow = paramsToShow.filter(p => p.isFavorite);
 
-                // 2. NEW: FILTER BY SEARCH QUERY
                 if (searchQuery) {
                     paramsToShow = paramsToShow.filter(p => 
                         p.name.toLowerCase().includes(searchQuery)
@@ -437,7 +515,6 @@
                 }
 
                 if (paramsToShow.length === 0) {
-                    // Smart Empty State Messages
                     let msg = 'No User Parameters found.';
                     if (data.parameters.length > 0) {
                         if (searchQuery) msg = 'No matching parameters found.';
@@ -461,8 +538,8 @@
                                     onchange="updateParam('${param.name}', this.value)" 
                                     onkeydown="if(event.key==='Enter')this.blur()">
                                 
-                                <button class="icon-action-btn" title="Edit Comment: ${safeComment}" 
-                                    onclick="editComment('${param.name}', '${safeComment}')">✎</button>
+                                <button class="icon-action-btn" title="Edit Name & Comment" 
+                                    onclick="openEditModal('${param.name}', '${safeComment}')">✎</button>
                                 
                                 <button class="icon-action-btn del-btn" title="Delete Parameter" 
                                     onclick="deleteParam('${param.name}')">×</button>

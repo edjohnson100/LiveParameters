@@ -25,7 +25,7 @@ def scan_parameters():
                 "expression": param.expression,
                 "value": safe_val, 
                 "unit": param.unit,
-                "comment": param.comment, # NEW: Send comment to UI
+                "comment": param.comment, 
                 "isFavorite": getattr(param, "isFavorite", False)
             })
         
@@ -66,19 +66,40 @@ def update_parameter(name, expression):
     except Exception as e:
         return json.dumps({"message": f"Error: {str(e)}", "type": "error"})
 
-# --- NEW FUNCTION ---
-def update_parameter_comment(name, comment):
+# --- UPDATED: HANDLES RENAME & COMMENT ---
+def update_parameter_attributes(old_name, new_name, comment):
     try:
         app = adsk.core.Application.get()
         design = app.activeProduct
-        param = design.userParameters.itemByName(name)
+        param = design.userParameters.itemByName(old_name)
         
-        if param:
-            param.comment = str(comment)
-            return json.dumps({"message": "Comment Updated", "type": "success"})
-        return json.dumps({"message": "Parameter not found", "type": "error"})
-    except:
-        return json.dumps({"message": "Failed to update comment", "type": "error"})
+        if not param:
+            return json.dumps({"message": "Parameter not found", "type": "error"})
+            
+        # 1. Handle Rename if needed
+        if old_name != new_name:
+            # Check for conflict
+            if design.userParameters.itemByName(new_name):
+                 return json.dumps({"message": f"Name '{new_name}' already taken", "type": "error"})
+            try:
+                param.name = new_name
+            except:
+                return json.dumps({"message": "Invalid Name (Avoid spaces/symbols)", "type": "error"})
+        
+        # 2. Update Comment
+        param.comment = str(comment)
+
+        # 3. Return Success + Full Scan (since name changed, list order might change)
+        scan_result = json.loads(scan_parameters())
+        return json.dumps({
+            "message": "Parameter Saved", 
+            "type": "success",
+            "doc_name": scan_result.get('doc_name'),
+            "parameters": scan_result.get('parameters')
+        })
+
+    except Exception as e:
+        return json.dumps({"message": f"Failed: {str(e)}", "type": "error"})
 
 def create_parameter(name, unit, expression, comment):
     try:
