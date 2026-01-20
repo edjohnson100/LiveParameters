@@ -56,7 +56,8 @@ Since this is a Python-based add-in, you can install it directly into your Fusio
 
 ## Using LiveParameters
 
-Once running, the **LiveParameters** palette will appear (defaulting to the right side). You can access it via the **Solid > Modify** panel if you close it.
+Once running, to open the **LiveParameters** palette window:
+* Select **"Live Param"** via **Solid > Modify** menu (it will be near the bottom) to open the **LiveParameters** palette window. If you close the palette window, you can re-open it in the same way.
 
 ### The Interface
 
