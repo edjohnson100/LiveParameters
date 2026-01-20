@@ -170,9 +170,9 @@ def run(context):
     script_folder = os.path.dirname(os.path.realpath(__file__))
     res_dir = os.path.join(script_folder, 'resources')
     
-    cmdDef = ui.commandDefinitions.addButtonDefinition(command_id, 'Live Params', 'Manage Parameters', res_dir)
+    cmdDef = ui.commandDefinitions.addButtonDefinition(command_id, 'Live Parameters', 'A persistent palette for managing User Parameters in real-time.', res_dir)
     
-    icon_path = os.path.join(res_dir, 'LiveParamsIcon.png')
+    icon_path = os.path.join(res_dir, '256x256.png')
     if os.path.exists(icon_path):
         cmdDef.toolClipFilename = icon_path
 
