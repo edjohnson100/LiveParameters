@@ -21,22 +21,29 @@ class MyCommandExecuteHandler(adsk.core.CommandEventHandler):
         try:
             # 1. CLEANUP OLD INSTANCES
             old = ui.palettes.itemById(palette_id)
-            if old: old.deleteMe()
+            if old:
+                live_logic._save_palette_geometry(old)
+                old.deleteMe()
 
             # 2. ROBUST PATH CONSTRUCTION
             script_folder = os.path.dirname(os.path.realpath(__file__))
             html_path = os.path.join(script_folder, 'resources', 'live_index.html')
-            
+
             if not os.path.exists(html_path):
                 ui.messageBox(f'Error: HTML file not found at:\n{html_path}')
                 return
 
             url = 'file:///' + html_path.replace('\\', '/')
-            
-            # 3. CREATE PALETTE (Width 360)
-            palette = ui.palettes.add(palette_id, 'Live Parameters', url, True, True, True, 360, 400)
+
+            # 3. CREATE PALETTE (restoring saved size, default 360x400)
+            geometry = live_logic._load_config().get('palette_geometry', {})
+            width = geometry.get('width', 360)
+            height = geometry.get('height', 400)
+
+            palette = ui.palettes.add(palette_id, 'Live Parameters', url, True, True, True, width, height)
             palette.dockingState = adsk.core.PaletteDockingStates.PaletteDockStateRight
-            
+            live_logic._restore_palette_geometry(palette)
+
             # 4. ATTACH HANDLERS
             onHtmlEvent = MyHTMLEventHandler()
             palette.incomingFromHTML.add(onHtmlEvent)
@@ -88,6 +95,33 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
             if action == 'refresh_data':
                 payload = live_logic.scan_parameters()
                 if palette: palette.sendInfoToHTML('update_ui', payload)
+                return
+
+            elif action == 'export_theme':
+                live_logic.export_theme_logic(data.get('content'), data.get('default_name'))
+                return
+
+            elif action == 'import_theme':
+                content = live_logic.import_theme_logic()
+                if content and palette:
+                    palette.sendInfoToHTML('theme_imported', json.dumps({'content': content}))
+                return
+
+            elif action == 'save_imported_theme':
+                theme_id = data.get('id')
+                theme_vars = data.get('vars')
+                if theme_id and isinstance(theme_vars, dict):
+                    live_logic.save_imported_theme(theme_id, theme_vars)
+                return
+
+            elif action == 'remove_imported_theme':
+                theme_id = data.get('id')
+                if theme_id:
+                    live_logic.delete_imported_theme(theme_id)
+                return
+
+            elif action == 'reset_imported_themes':
+                live_logic.clear_imported_themes()
                 return
 
             # 2. BLOCK WRITES IF UNSAFE
@@ -157,7 +191,10 @@ class MyCommandCreatedHandler(adsk.core.CommandCreatedEventHandler):
 
 class MyPaletteCloseHandler(adsk.core.UserInterfaceGeneralEventHandler):
     def __init__(self): super().__init__()
-    def notify(self, args): pass
+    def notify(self, args):
+        palette = ui.palettes.itemById(palette_id)
+        if palette:
+            live_logic._save_palette_geometry(palette)
 
 def run(context):
     global ui, app
@@ -172,9 +209,10 @@ def run(context):
     
     cmdDef = ui.commandDefinitions.addButtonDefinition(command_id, 'Live Parameters', 'A persistent palette for managing User Parameters in real-time.', res_dir)
     
-    icon_path = os.path.join(res_dir, '256x256.png')
-    if os.path.exists(icon_path):
-        cmdDef.toolClipFilename = icon_path
+    # toolClip: explicit reference, not relying on Fusion's resourceFolder auto-pickup
+    tool_clip_path = os.path.join(res_dir, 'toolClip.png')
+    if os.path.exists(tool_clip_path):
+        cmdDef.toolClipFilename = tool_clip_path
 
     onCreated = MyCommandCreatedHandler()
     cmdDef.commandCreated.add(onCreated)
@@ -191,7 +229,10 @@ def run(context):
 
 def stop(context):
     try:
-        if ui.palettes.itemById(palette_id): ui.palettes.itemById(palette_id).deleteMe()
+        palette = ui.palettes.itemById(palette_id)
+        if palette:
+            live_logic._save_palette_geometry(palette)
+            palette.deleteMe()
         if ui.commandDefinitions.itemById(command_id): ui.commandDefinitions.itemById(command_id).deleteMe()
         panel = ui.allToolbarPanels.itemById('SolidModifyPanel')
         if panel and panel.controls.itemById(command_id): panel.controls.itemById(command_id).deleteMe()
