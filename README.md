@@ -21,20 +21,31 @@ The native Fusion dialog is **modal**, meaning it **must be dismissed** to conti
 
 ## Installation
 
-Since this is a Python-based add-in, you install it directly into your Fusion API folder — no installer package required.
+### Manual Installation Options
 
-1.  **Download:** Grab the latest `LiveParameters-vX.Y.Z.zip` from the [Releases](https://github.com/edjohnson100/LiveParameters/releases) page and unzip it. You should have a `LiveParameters` folder containing files like `LiveParameters.manifest` and `LiveParameters.py`.
-2.  **Move to Fusion:**
-    * **Windows:** Copy the folder to:
-        `%AppData%\Autodesk\Autodesk Fusion 360\API\AddIns\`
-    * **Mac:** Copy the folder to:
-        `~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/`
-3.  **Activate:**
-    * Open Fusion.
-    * Press `Shift+S` to open **Scripts and Add-Ins**.
-    * Click the **Add-Ins** tab.
-    * Select **LiveParameters** and click **Run**.
-    * *(Optional)* Check **Run on Startup** to have it load automatically next time.
+This add-in requires a quick manual installation. You can choose to install it in Fusion's default directory or a custom folder of your choice.
+
+#### Option 1: Install in the Default Fusion Directory
+1. **Download:** Download the source code as a ZIP file and extract the `LiveParameters-main` folder. Rename the folder to `LiveParameters` (remove the `-main` suffix) — Fusion requires the folder name to match the add-in name exactly, so it won't run correctly if you skip this step.
+Download the zip file using the green `Code` button above or simply click this link: [LiveParameters Main Branch](https://github.com/edjohnson100/LiveParameters/archive/refs/heads/main.zip)
+*(Alternatively, grab the `LiveParameters-vX.Y.Z.zip` asset from the [latest Release](https://github.com/edjohnson100/LiveParameters/releases/latest) — its folder is already named `LiveParameters`, so you can skip the rename step.)*
+2. **Move the Folder:** Move the entire `LiveParameters` folder into your native Fusion Scripts directory:
+   * **Windows:** `%appdata%\Autodesk\Autodesk Fusion 360\API\AddIns`
+     * *Note: This path is hidden by default in Windows. Copy and paste the entire path above into the File Explorer address bar to navigate there directly, bypassing the need to toggle hidden files/folders on.*
+   * **Mac:** `~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns`
+     * *Note: `~/Library` is hidden by default on macOS as well. In Finder, press `Cmd+Shift+G` (Go to Folder), paste the path above, and press Enter to navigate there directly. (Unverified on an actual Mac as of this writing — please confirm and adjust this note if it's not accurate.)*
+3. **Open Fusion:** Press `Shift + S` to open the **Scripts and Add-Ins** dialog.
+4. **Run the Script:** Make sure the **Add-ins** filter checkbox is checked. You should see **LiveParameters** in the list of add-ins. You may want to check the 'Run on startup' option so it automatically runs when Fusion starts. Click the **Run** icon to execute the add-in.
+
+#### Option 2: Install in a Custom Directory
+1. **Download:** Download the source code as a ZIP file and extract the `LiveParameters-main` folder. Rename the folder to `LiveParameters` (remove the `-main` suffix) — Fusion requires the folder name to match the add-in name exactly, so it won't run correctly if you skip this step.
+Download the zip file using the green `Code` button above or simply click this link: [LiveParameters Main Branch](https://github.com/edjohnson100/LiveParameters/archive/refs/heads/main.zip)
+*(Alternatively, grab the `LiveParameters-vX.Y.Z.zip` asset from the [latest Release](https://github.com/edjohnson100/LiveParameters/releases/latest) — its folder is already named `LiveParameters`, so you can skip the rename step.)*
+2. **Organize:** Create a dedicated folder on your computer for your Fusion tools (e.g., `Documents\Fusion_Tools`) and move the `LiveParameters` folder inside it.
+3. **Open Fusion:** Press `Shift + S` to open the **Scripts and Add-Ins** dialog.
+4. **Add the Add-in:** Click the grey **"+"** icon next to the search box at the top of the dialog and select **Script or add-in from device**.
+5. **Locate:** Navigate to your custom folder, select the `LiveParameters` folder, and click **Select Folder**.
+6. **Run the Add-in:** Make sure the **Add-ins** filter checkbox is checked. You should see **LiveParameters** in the list of add-ins. You may want to check the 'Run on startup' option so it automatically runs when Fusion starts. Click the **Run** icon to execute the add-in.
 
 ## Using LiveParameters
 
@@ -78,10 +89,11 @@ For the fellow coders and makers out there, here is how **LiveParameters** was b
 
 ---
 
-## Support the Maker (and Lucy!)
+## ❤️ Support the Maker (and Lucy!)
 
-I develop these tools to improve my own parametric workflows and love sharing them with the community. If you find LiveUtilities useful and want to say thanks, feel free to **[buy Lucy a dog treat on Ko-fi](https://ko-fi.com/makingwithanedj)**! This is completely optional and supports my Chief Wellness Officer in maintaining mandatory play breaks. Your appreciation and feedback are more than enough.
+I develop these tools to improve my own workflows and love sharing them with the community. If you find LiveParameters useful and want to say thanks, feel free to **[buy Lucy a dog treat on Ko-fi](https://ko-fi.com/makingwithanedj)**!
 
 ***
+
 *Happy Making!*
 *— EdJ*
