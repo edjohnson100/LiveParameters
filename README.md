@@ -21,33 +21,15 @@ The native Fusion dialog is **modal**, meaning it **must be dismissed** to conti
 
 ## Installation
 
-### Method: Installer Packages
-Windows and Mac installers are availble under the "Releases" link.
+Since this is a Python-based add-in, you install it directly into your Fusion API folder — no installer package required.
 
-#### Windows Users
-1.  **Download:** Download the latest installer (`LiveParameters_Win.exe` or `.msi`).
-2.  **Install:** Double-click the installer to run it.
-    * *Note: If Windows protects your PC saying "Unknown Publisher," click **More Info** → **Run Anyway**. (I'm an indie developer, not a giant corporation!)*
-3.  **Restart:** If Fusion is open, restart it to load the new add-in.
-
-#### Mac Users
-1.  **Download:** Download the latest package (`LiveParameters_Mac.pkg`).
-2.  **Install:** Double-click the package to run the installer.
-    * *Note: If macOS prevents the install, Right-Click the file and choose **Open**, then click **Open** again in the dialog box.*
-3.  **Restart:** If Fusion is open, restart it to load the new add-in.
-
-### Method: Manual Installation (Scripts & Add-Ins)
-Since this is a Python-based add-in, you can install it directly into your Fusion API folder.
-
-1.  **Download:** Download the source code (ZIP) from this repository and unzip it.
-2.  **Locate Folder:** You should have a folder named `LiveParameters-main` containing files like `LiveParameters.manifest` and `LiveParameters.py`.
-3.  **Rename Folder:** Rename the folder to  `LiveParameters`.
-4.  **Move to Fusion:**
+1.  **Download:** Grab the latest `LiveParameters-vX.Y.Z.zip` from the [Releases](https://github.com/edjohnson100/LiveParameters/releases) page and unzip it. You should have a `LiveParameters` folder containing files like `LiveParameters.manifest` and `LiveParameters.py`.
+2.  **Move to Fusion:**
     * **Windows:** Copy the folder to:
         `%AppData%\Autodesk\Autodesk Fusion 360\API\AddIns\`
     * **Mac:** Copy the folder to:
         `~/Library/Application Support/Autodesk/Autodesk Fusion 360/API/AddIns/`
-5.  **Activate:**
+3.  **Activate:**
     * Open Fusion.
     * Press `Shift+S` to open **Scripts and Add-Ins**.
     * Click the **Add-Ins** tab.
@@ -63,7 +45,7 @@ Once running, to open the **LiveParameters** palette window:
 
 * **Search Bar:** Instantly filter your parameter list by name. No more scrolling through hundreds of parameters!
 * **★ Favs Only:** Toggle this checkbox to hide everything except your "Favorite" parameters.
-* **Dark/Light Mode:** Use the toggle in the header to switch themes.
+* **Themes:** Pick Light/Dark/Sepia from the header dropdown, or open the **Themes** tab to import/export a custom theme (JSON or a full `style.css` bundle) and adjust font family/size.
 
 ### Managing Parameters
 

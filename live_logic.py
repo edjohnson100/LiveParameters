@@ -53,12 +53,15 @@ def _themes_dialog_dir():
     themes_dir = os.path.join(root, 'resources', 'themes')
     return themes_dir if os.path.isdir(themes_dir) else os.path.join(root, 'resources')
 
-def export_theme_logic(content, default_name):
+def export_theme_logic(file_type, content, default_name):
     app = adsk.core.Application.get()
     ui = app.userInterface
     fileDialog = ui.createFileDialog()
     fileDialog.title = 'Export Theme'
-    fileDialog.filter = 'JSON Files (*.json);;All Files (*.*)'
+    if file_type == 'css':
+        fileDialog.filter = 'CSS Files (*.css);;All Files (*.*)'
+    else:
+        fileDialog.filter = 'JSON Files (*.json);;All Files (*.*)'
     fileDialog.initialDirectory = _themes_dialog_dir()
     fileDialog.initialFilename = default_name
     if fileDialog.showSave() == adsk.core.DialogResults.DialogOK:
@@ -69,17 +72,21 @@ def export_theme_logic(content, default_name):
         except Exception as e:
             ui.messageBox(f'Failed to save theme:\n{str(e)}')
 
-def import_theme_logic():
+def import_theme_logic(file_type):
     app = adsk.core.Application.get()
     ui = app.userInterface
     fileDialog = ui.createFileDialog()
     fileDialog.title = 'Import Theme'
-    fileDialog.filter = 'JSON Files (*.json);;All Files (*.*)'
+    if file_type == 'css':
+        fileDialog.filter = 'CSS Files (*.css);;All Files (*.*)'
+    else:
+        fileDialog.filter = 'JSON Files (*.json);;All Files (*.*)'
     fileDialog.initialDirectory = _themes_dialog_dir()
     if fileDialog.showOpen() == adsk.core.DialogResults.DialogOK:
         try:
             with open(fileDialog.filename, 'r', encoding='utf-8') as f:
-                return f.read()
+                content = f.read()
+            return json.dumps({"file_type": file_type, "content": content})
         except Exception as e:
             ui.messageBox(f'Failed to read theme:\n{str(e)}')
     return None

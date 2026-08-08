@@ -98,13 +98,13 @@ class MyHTMLEventHandler(adsk.core.HTMLEventHandler):
                 return
 
             elif action == 'export_theme':
-                live_logic.export_theme_logic(data.get('content'), data.get('default_name'))
+                live_logic.export_theme_logic(data.get('file_type'), data.get('content'), data.get('default_name'))
                 return
 
             elif action == 'import_theme':
-                content = live_logic.import_theme_logic()
+                content = live_logic.import_theme_logic(data.get('file_type'))
                 if content and palette:
-                    palette.sendInfoToHTML('theme_imported', json.dumps({'content': content}))
+                    palette.sendInfoToHTML('theme_imported', content)
                 return
 
             elif action == 'save_imported_theme':

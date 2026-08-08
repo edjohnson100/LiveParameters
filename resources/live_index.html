@@ -7,24 +7,108 @@
 <body>
     <div class="header">
         <div class="title-group">
-            <h2>Live Parameters<span id="versionTag" class="version-tag"></span></h2>
-            <div id="docName" class="sub-header">Scanning...</div>
+            <h2>Live Parameters</h2>
+            <div id="versionTag" class="sub-header"></div>
         </div>
-    </div>
-
-    <div class="theme-manager-row">
-        <select id="themeSelector">
+        <select id="themeSelector" onchange="changeTheme()" style="width: auto; height: 28px; font-size: 11px; padding: 2px 5px;">
             <option value="light">Light</option>
             <option value="dark">Dark</option>
             <option value="sepia">Sepia</option>
         </select>
-        <button class="theme-icon-btn" id="themeImportBtn" title="Import theme (.theme.json)">⬆</button>
-        <button class="theme-icon-btn" id="themeExportBtn" title="Export current theme">⬇</button>
-        <button class="theme-icon-btn" id="themeRemoveBtn" title="Select a custom (imported) theme to enable" disabled>✕</button>
     </div>
-    <div class="theme-reset-row">
-        <span class="factory-reset-link" id="themeResetLink">Factory Reset Theme Cache</span>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-params')">Parameters</button>
+        <button class="tab-btn" onclick="switchTab('tab-themes')">Themes</button>
     </div>
+
+    <div id="tab-params" class="tab-content active">
+        <div id="docName" class="sub-header" style="margin-bottom: 12px;">Scanning...</div>
+
+        <div class="controls-bar">
+            <label class="fav-toggle" title="Show Favorites Only">
+                <input type="checkbox" id="favFilterCheck">
+                <span>★ Favs Only</span>
+            </label>
+
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="Filter parameters...">
+            </div>
+
+            <button id="scanBtn" class="icon-btn" title="Rescan Model">↻ Refresh</button>
+        </div>
+
+        <div id="sec-actions" class="section collapsed">
+            <div class="section-header" tabindex="0" role="button" aria-expanded="false" onclick="toggleSection('sec-actions')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('sec-actions');}">
+                <h3>Add Parameter</h3>
+                <span class="arrow">▼</span>
+            </div>
+
+            <div class="section-content">
+                <div class="create-grid">
+                    <input type="text" id="new_name" placeholder="Name (e.g. Width)" />
+                    <select id="new_unit" onchange="toggleCustomUnit(this)">
+                        <option value="mm">Length (mm)</option>
+                        <option value="in">Length (in)</option>
+                        <option value="deg">Angle (deg)</option>
+                        <option value="">No Units</option>
+                        <option value="TEXT">Text</option>
+                        <option value="OTHER">Other...</option>
+                    </select>
+                    <input type="text" id="custom_unit" class="full-width" placeholder="Type unit (e.g. cm)" style="display:none;" />
+                    <input type="text" id="new_expr" placeholder="Expression" class="full-width" />
+                    <input type="text" id="new_comm" placeholder="Comment (Optional)" class="full-width" />
+                </div>
+                <button id="createBtn" class="btn-success">Create Parameter</button>
+            </div>
+        </div>
+
+        <div id="statusMessage" class="status-box"></div>
+
+        <div id="paramList" class="param-container">
+            <div class="empty-state">Loading parameters...</div>
+        </div>
+    </div>
+
+    <div id="tab-themes" class="tab-content">
+        <div class="section" id="sec-theme-manager">
+            <div class="section-header" tabindex="0" role="button" aria-expanded="true" onclick="toggleSection('sec-theme-manager')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSection('sec-theme-manager');}">
+                <h3>Theme Manager</h3>
+                <span class="arrow">▼</span>
+            </div>
+            <div class="section-content data-container">
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label>Font Family</label>
+                        <select id="fontFamilySelector" onchange="updateActiveThemeProperty('--font-family', this.value)">
+                            <option value="'Segoe UI', Tahoma, sans-serif">Sans-serif</option>
+                            <option value="Georgia, 'Times New Roman', Times, serif">Serif</option>
+                            <option value="'Consolas', 'Courier New', monospace">Monospace</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label>Base Font Size</label>
+                        <select id="fontSizeSelector" onchange="updateActiveThemeProperty('--font-size-base', this.value)">
+                            <option value="11px">11px</option><option value="12px">12px</option><option value="13px">13px</option>
+                            <option value="14px">14px</option><option value="15px">15px</option><option value="16px">16px</option>
+                            <option value="17px">17px</option><option value="18px">18px</option>
+                        </select>
+                    </div>
+                </div>
+                <p>Import custom themes via a JSON theme export or batch import custom style.css files.</p>
+                <div class="create-grid">
+                    <button class="btn-primary" onclick="requestImportTheme('css')">📥 Import style.css</button>
+                    <button class="btn-primary" onclick="requestExportTheme('css')">📤 Export style.css</button>
+                    <button class="btn-secondary" onclick="requestImportTheme('json')">📂 Import .json</button>
+                    <button class="btn-secondary" onclick="requestExportTheme('json')">💾 Export .json</button>
+                    <button id="themeRemoveBtn" class="btn-secondary full-width" onclick="removeSelectedTheme()" disabled title="Select a custom (imported) theme to enable">🗑️ Remove Selected Theme</button>
+                    <button class="btn-secondary full-width" onclick="resetThemeCache()">🗑️ Factory Reset Theme Cache</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="version-footer">Live Parameters<br><span id="footerVersion"></span></div>
 
     <div id="editModal" class="modal-overlay">
         <div class="modal-content">
@@ -43,50 +127,6 @@
                 <button class="modal-btn btn-save" onclick="saveEditModal()">Save</button>
             </div>
         </div>
-    </div>
-
-    <div class="controls-bar">
-        <label class="fav-toggle" title="Show Favorites Only">
-            <input type="checkbox" id="favFilterCheck">
-            <span>★ Favs Only</span>
-        </label>
-
-        <div class="search-container">
-            <input type="text" id="searchInput" class="search-input" placeholder="Filter parameters...">
-        </div>
-
-        <button id="scanBtn" class="icon-btn" title="Rescan Model">↻ Refresh</button>
-    </div>
-
-    <div id="sec-actions" class="section collapsed">
-        <div class="section-header" onclick="toggleSection('sec-actions')">
-            <h3>Add Parameter</h3>
-            <span class="arrow">▼</span>
-        </div>
-
-        <div class="section-content">
-            <div class="create-grid">
-                <input type="text" id="new_name" placeholder="Name (e.g. Width)" />
-                <select id="new_unit" onchange="toggleCustomUnit(this)">
-                    <option value="mm">Length (mm)</option>
-                    <option value="in">Length (in)</option>
-                    <option value="deg">Angle (deg)</option>
-                    <option value="">No Units</option>
-                    <option value="TEXT">Text</option>
-                    <option value="OTHER">Other...</option>
-                </select>
-                <input type="text" id="custom_unit" class="full-width" placeholder="Type unit (e.g. cm)" style="display:none;" />
-                <input type="text" id="new_expr" placeholder="Expression" class="full-width" />
-                <input type="text" id="new_comm" placeholder="Comment (Optional)" class="full-width" />
-            </div>
-            <button id="createBtn" class="btn-success">Create Parameter</button>
-        </div>
-    </div>
-
-    <div id="statusMessage" class="status-box"></div>
-
-    <div id="paramList" class="param-container">
-        <div class="empty-state">Loading parameters...</div>
     </div>
 
     <script src="script.js"></script>
