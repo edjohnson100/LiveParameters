@@ -6,7 +6,7 @@
 	"description": {
 		"":	 "A persistent palette for managing User Parameters in real-time."
 	},
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"runOnStartup": false,
 	"supportedOS": "windows|mac",
 	"editEnabled": true,
