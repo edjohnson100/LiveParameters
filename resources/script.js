@@ -232,8 +232,12 @@ function applyCustomThemeVars() {
     styleTag.textContent = out;
 }
 
+function findThemeOption(id) {
+    return Array.from(themeSelector.options).find(o => o.value === id) || null;
+}
+
 function addCustomOption(id) {
-    if (!themeSelector.querySelector(`option[value="${id}"]`)) {
+    if (!findThemeOption(id)) {
         const opt = document.createElement('option');
         opt.value = id;
         opt.textContent = `${id} (custom)`;
@@ -298,7 +302,7 @@ function removeSelectedTheme() {
     delete customThemes[id];
     localStorage.setItem('live_custom_themes', JSON.stringify(customThemes));
     sendToFusion('remove_imported_theme', { id: id });
-    const opt = themeSelector.querySelector(`option[value="${id}"]`);
+    const opt = findThemeOption(id);
     if (opt) opt.remove();
     applyCustomThemeVars();
     themeSelector.value = 'dark';
@@ -470,6 +474,14 @@ function sendToFusion(action, data = {}) {
 
 function refreshData() { sendToFusion('refresh_data'); }
 
+// Free text (expressions, comments) can legally contain " or & (e.g. a TEXT
+// parameter's expression like 'He said "hi"') and gets embedded straight into
+// double-quoted HTML attributes -- escape both or a literal " breaks the
+// attribute and corrupts the row's markup.
+function escapeHtmlAttr(s) {
+    return String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;');
+}
+
 function renderUI(data) {
     lastReceivedData = data;
     if (data.addin_version) {
@@ -508,20 +520,22 @@ function renderUI(data) {
                 const row = document.createElement('div');
                 row.className = 'param-row';
                 const starColor = param.isFavorite ? '#ff9e3b' : '#555';
-                const safeComment = param.comment ? param.comment.replace(/'/g, "\\'") : "";
+                const displayComment = param.comment || "";
+                const encodedComment = encodeURIComponent(displayComment).replace(/'/g, '%27');
+                const titleComment = escapeHtmlAttr(displayComment);
 
                 row.innerHTML = `
-                    <div class="param-label" title="${param.name}\n${safeComment}">
+                    <div class="param-label" title="${param.name}\n${titleComment}">
                         <span style="color:${starColor}; margin-right:6px; cursor:pointer;" onclick="toggleFavorite('${param.name}')">★</span>
                         ${param.name}
                     </div>
                     <div class="param-input">
-                        <input type="text" value="${param.expression}"
+                        <input type="text" value="${escapeHtmlAttr(param.expression)}"
                             onchange="updateParam('${param.name}', this.value)"
                             onkeydown="if(event.key==='Enter')this.blur()">
 
                         <button class="icon-action-btn" title="Edit Name & Comment"
-                            onclick="openEditModal('${param.name}', '${safeComment}')">✎</button>
+                            onclick="openEditModal('${param.name}', decodeURIComponent('${encodedComment}'))">✎</button>
 
                         <button class="icon-action-btn del-btn" title="Delete Parameter"
                             onclick="deleteParam('${param.name}')">×</button>

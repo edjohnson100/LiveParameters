@@ -1,6 +1,10 @@
 # LiveParameters
 **A persistent, real-time palette for managing Fusion User Parameters.**
 
+**Version:** 1.2.2
+
+**Author:** Ed Johnson (Making With An EdJ)
+
 <img src="LiveParamsAppIcon.png" width="300">
 
 ## Introduction: The "Why" and "What"
@@ -18,6 +22,10 @@ The native Fusion dialog is **modal**, meaning it **must be dismissed** to conti
 * **Real-Time Updates:** Tweak dimensions and see your model update instantly without closing windows.
 * **Workflow Efficiency:** Keep your parameters docked on the side while you design.
 * **Enhanced Management:** Search, filter by favorites, rename parameters, and manage comments easier than ever before.
+
+## ✨ What's New in v1.2.2
+
+**Bug fix:** the Edit (✎) button could silently fail to open for a parameter whose comment contained a straight apostrophe (e.g. "what's") or a line break — fixed by properly encoding comments before they reach the edit dialog. A couple of related edge cases (an unescaped `"` in a text parameter's expression, or in an imported theme's ID) were found and fixed at the same time.
 
 ## Installation
 
